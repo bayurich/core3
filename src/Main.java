@@ -29,39 +29,22 @@ public class Main {
         crDir(ROOT_DIR + "res/vectors");
         crDir(ROOT_DIR + "res/icons");
 
-        String path = ROOT_DIR + "temp/temp.txt";
-        crFilePrintResult(path);
-        File file = new File(path);
-        if (file.exists()) {
-            try (FileWriter fileWriter = new FileWriter(file, true);
-                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)){
-
-                bufferedWriter.write(log.toString());
-                bufferedWriter.flush();
-            }
-            catch (Exception e) {
-                System.out.println("Ошибка записи в файл " + path + ": " + e.getMessage());
-            }
-        }
-        else {
-            System.out.println("Файл не существует: " + path);
-        }
-
         // -- task2 --
         GameProgress gameProgress1 = new GameProgress(100, 1, 2, 50);
         GameProgress gameProgress2 = new GameProgress(65, 3, 5, 500);
         GameProgress gameProgress3 = new GameProgress(28, 5, 7, 730.70);
 
-        path = ROOT_DIR + "savegames";
+        String path = ROOT_DIR + "savegames";
         saveProgress(gameProgress1, path + "/save1.dat");
         saveProgress(gameProgress2, path + "/save2.dat");
         saveProgress(gameProgress3, path + "/save3.dat");
 
         List<String> listForZip = new ArrayList<>();
         File saveDir = new File(path);
-        if (saveDir.isDirectory()) {
-            for (File saveFile : saveDir.listFiles()){
-                if (!saveFile.isDirectory() && saveFile.getName().matches(".*\\.dat")) listForZip.add(saveFile.getPath());
+        if (saveDir.isDirectory() && saveDir.listFiles() != null) {
+            for (File saveFile : saveDir.listFiles()) {
+                if (!saveFile.isDirectory() && saveFile.getName().matches(".*\\.dat"))
+                    listForZip.add(saveFile.getPath());
             }
         }
         zipFiles(path + "/save.zip", listForZip);
@@ -72,11 +55,26 @@ public class Main {
         // -- task3 --
         openZip(path + "/save.zip", path);
         Optional<GameProgress> optional = openProgress(path + "/save2.dat");
-        if (optional.isPresent()){
-            System.out.println("Состояние сохранненой игры: " + optional.get().toString());
-        }
-        else System.out.println("Состояние сохранненой игры не найдено");
+        if (optional.isPresent()) {
+            print("Состояние сохранненой игры: " + optional.get().toString());
+        } else print("Состояние сохранненой игры не найдено");
 
+        path = ROOT_DIR + "temp/temp.txt";
+        crFilePrintResult(path);
+        File file = new File(path);
+        if (file.exists()) {
+            try (FileWriter fileWriter = new FileWriter(file, true);
+                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)){
+
+                bufferedWriter.write(log.toString());
+                bufferedWriter.flush();
+            }
+            catch (Exception e) {
+                print("Ошибка записи в файл " + path + ": " + e.getMessage());
+            }
+        } else {
+            print("Файл не существует: " + path);
+        }
     }
 
     private static Optional<GameProgress> openProgress(String pathname) {
@@ -89,7 +87,7 @@ public class Main {
             gameProgress = (GameProgress) ois.readObject();
         }
         catch (Exception e){
-            System.out.println("Ошибка десериализации объекта из файла " + pathname + ": " + e.getMessage());
+            print("Ошибка десериализации объекта из файла " + pathname + ": " + e.getMessage());
             return Optional.empty();
         }
 
@@ -111,21 +109,20 @@ public class Main {
 
                 zis.closeEntry();
                 fos.close();
-                System.out.println("OK - извлечен файл " + pathnameRes + "/" + entry.getName());
+                print("OK - извлечен файл " + pathnameRes + "/" + entry.getName());
             }
         }
         catch (Exception e){
-            System.out.println("Ошибка распаковки архива " + pathnameZip + ": " + e.getMessage());
+            print("Ошибка распаковки архива " + pathnameZip + ": " + e.getMessage());
         }
     }
 
     private static void deleteFile(String path) {
         File fileForDel = new File(path);
         if (fileForDel.exists()) {
-            if (fileForDel.delete()) System.out.println("OK - файл удален: " + path);
-            else System.out.println("Ошибка при удалении файла: " + path);
-        }
-        else System.out.println("Файл не найден: " + path);
+            if (fileForDel.delete()) print("OK - файл удален: " + path);
+            else print("Ошибка при удалении файла: " + path);
+        } else print("Файл не найден: " + path);
     }
 
     private static void zipFiles(String pathOutZip, List<String> listForZip) {
@@ -145,16 +142,16 @@ public class Main {
                         zos.write(c);
                     }
                     zos.closeEntry();
-                    System.out.println("Файл " + fileForZip + " добавлен в архив " + pathOutZip);
+                    print("Файл " + fileForZip + " добавлен в архив " + pathOutZip);
                 }
                 catch (Exception e){
-                    System.out.println("Ошибка чтения файла " + fileForZip + ": " + e.getMessage());
+                    print("Ошибка чтения файла " + fileForZip + ": " + e.getMessage());
                 }
             }
-            System.out.println("Создан архив " + pathOutZip);
+            print("Создан архив " + pathOutZip);
         }
         catch (Exception e){
-            System.out.println("Ошибка упаковки архива " + pathOutZip + ": " + e.getMessage());
+            print("Ошибка упаковки архива " + pathOutZip + ": " + e.getMessage());
         }
     }
 
@@ -163,10 +160,10 @@ public class Main {
             ObjectOutputStream oos = new ObjectOutputStream(fos)){
 
             oos.writeObject(object);
-            System.out.println("OK - Успешная запись в " + path);
+            print("OK - Успешная запись в " + path);
         }
         catch (Exception e){
-            System.out.println("ERROR - Ошибка записи в файл "+ path + ": " + e.getMessage());
+            print("ERROR - Ошибка записи в файл " + path + ": " + e.getMessage());
         }
     }
 
@@ -184,6 +181,10 @@ public class Main {
 
     private static boolean crFile(String path) throws Exception{
         File file = new File(path);
+        if (file.exists()) {
+            printRes("Файл уже существует: " + path);
+            return false;
+        }
         return file.createNewFile();
     }
 
