@@ -57,7 +57,9 @@ public class Main {
         Optional<GameProgress> optional = openProgress(path + "/save2.dat");
         if (optional.isPresent()) {
             print("Состояние сохранненой игры: " + optional.get().toString());
-        } else print("Состояние сохранненой игры не найдено");
+        } else {
+            print("Состояние сохранненой игры не найдено");
+        }
 
         path = ROOT_DIR + "temp/temp.txt";
         crFilePrintResult(path);
