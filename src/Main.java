@@ -124,7 +124,9 @@ public class Main {
         if (fileForDel.exists()) {
             if (fileForDel.delete()) print("OK - файл удален: " + path);
             else print("Ошибка при удалении файла: " + path);
-        } else print("Файл не найден: " + path);
+        } else {
+            print("Файл не найден: " + path);
+        }
     }
 
     private static void zipFiles(String pathOutZip, List<String> listForZip) {
